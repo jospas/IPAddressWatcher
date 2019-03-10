@@ -1,0 +1,93 @@
+service: aws-ipaddress-listener
+
+provider:
+  name: aws
+  region: us-east-1  
+  runtime: nodejs8.10
+  stage: dev
+  profile: transcribe
+  logRetentionInDays: 7
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:Query
+        - dynamodb:UpdateItem
+      Resource: 
+        - 'arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.ipAddressTableName}'
+    - Effect: Allow
+      Action:
+        - sns:Publish
+      Resource:
+        - !Ref OutputSNSTopic
+package:
+  individually: true
+
+custom:
+  stage: '${opt:stage, self:provider.stage}'
+  ipAddressTableName: '${self:custom.stage}-ipaddresses'  
+  inputSNSTopicARN: 'arn:aws:sns:us-east-1:806199016981:AmazonIpSpaceChanged'
+  outputSNSTopicName: '${self:custom.stage}-ipaddressrangechanges'
+
+functions:
+
+  ipaddresslistener:
+    handler: 'lambda/listener.handler'
+    name: '${self:custom.stage}-${self:service}-listener'
+    description: 'Listens on SNS topic for filtered IP Address changes and notifies'
+    events:
+      - sns: '${self:custom.inputSNSTopicARN}'
+    environment: 
+
+      DEPLOYMENT_REGION: '${self:provider.region}' 
+
+      REGIONS: '[ "ap-southeast-2" ]'
+      SERVICES: '[ "S3" ]'
+
+      DYNAMO_IPADDRESS_TABLE: '${self:custom.ipAddressTableName}'
+      
+      PUBLISH_SNS: 'true'
+      PUBLISH_SNS_TOPIC_ARN: !Ref OutputSNSTopic
+      
+      PUBLISH_SLACK: 'false'
+      PUBLISH_SLACK_WEBHOOK: 'Enter Slack web hook url'
+
+    package:
+      exclude:
+        - '**'
+      include:
+        - 'node_modules/**'
+        - 'lambda/listener.js'
+    memorySize: 128
+    timeout: 120
+
+resources:
+  Resources:
+
+    OutputSNSTopic:
+      Type: 'AWS::SNS::Topic'
+      Properties:
+        TopicName: '${self:custom.outputSNSTopicName}'
+
+    IpAddressDynamoDBTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: '${self:custom.ipAddressTableName}'         
+        AttributeDefinitions:
+          - AttributeName: 'region'
+            AttributeType: 'S'
+          - AttributeName: 'service'
+            AttributeType: 'S'  
+        KeySchema:
+          - AttributeName: 'region'
+            KeyType: 'HASH'
+          - AttributeName: 'service'
+            KeyType: 'RANGE'
+        BillingMode: 'PAY_PER_REQUEST'
+
+  Outputs:
+    IpAddressRangeChangeSNSTopic:
+      Description: The output SNS topic to publish changes to
+      Value: !Ref OutputSNSTopic
