@@ -1,7 +1,5 @@
 # AWS IP Address Range Change Watcher (1.0.0)
 
-Author: Josh Passenger (jospas@amazon.com)
-
 This sample code shows how to listen to the [global IP address range change SNS topic](https://docs.aws.amazon.com/general/latest/gr/aws-ip-ranges.html#subscribe-notifications) and tracks the state of a set of AWS Regions and Services. 
 
 The latest IP address ranges are stored in a DynamoDB table and changes are optionally notified via SNS and Slack web hook.
@@ -34,7 +32,7 @@ If you intend to send messages to Slack follow the steps to [generate a new web 
 
 You will need to select a local AWS named credential profile or if running from an EC2 instance running in an IAM Role. Either edit or remove this parameter serverless.yml accordingly:
 
-	profile: <profileName>
+	profile: <profile name>
 
 ## Post-deployment configuration
 
@@ -100,3 +98,16 @@ The message format published to SNS for Lambda, SQS and web-hook subscribers is:
 	]
 }
 ```
+
+### Authors
+
+**Josh Passenger** AWS Solutions Architect - [jospas@amazon.com](mailto:jospas@amazon.com)
+
+### License
+
+This project is licensed under the Apache 2 License - see the [LICENSE.txt](LICENSE.txt) file for details
+
+### Warranty
+
+No warranty is provided or implied with this software, 
+it is provided as a Proof of Concept (POC) example and will require additional error checking code and testing.
