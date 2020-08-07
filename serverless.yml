@@ -2,10 +2,10 @@ service: aws-ipaddress-listener
 
 provider:
   name: aws
-  region: us-east-1  
-  runtime: nodejs8.10
+  region: ${opt:region, 'us-east-1'}
+  runtime: nodejs12.x
   stage: dev
-  profile: transcribe
+  profile: ${opt:profile, 'default'}
   logRetentionInDays: 7
   iamRoleStatements:
     - Effect: Allow
@@ -43,8 +43,8 @@ functions:
 
       DEPLOYMENT_REGION: '${self:provider.region}' 
 
-      REGIONS: '[ "ap-southeast-2" ]'
-      SERVICES: '[ "S3" ]'
+      REGIONS: '[ "ap-southeast-2", "GLOBAL" ]'
+      SERVICES: '[ "CONNECT", "AMAZON_CONNECT" ]'
 
       DYNAMO_IPADDRESS_TABLE: '${self:custom.ipAddressTableName}'
       
