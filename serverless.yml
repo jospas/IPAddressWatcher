@@ -44,7 +44,7 @@ functions:
       DEPLOYMENT_REGION: '${self:provider.region}' 
 
       REGIONS: '[ "ap-southeast-2", "GLOBAL" ]'
-      SERVICES: '[ "CONNECT", "AMAZON_CONNECT" ]'
+      SERVICES: '[ "CLOUDFRONT", "AMAZON_CONNECT" ]'
 
       DYNAMO_IPADDRESS_TABLE: '${self:custom.ipAddressTableName}'
       
